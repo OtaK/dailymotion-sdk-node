@@ -89,8 +89,10 @@ DailymotionAPI.prototype.createToken = function(next) {
         try         { var data = JSON.parse(body); }
         catch (e)   { return next(e); }
 
-        this.credentials.accessToken    = data.access_token;
-        this.credentials.refreshToken   = data.refresh_token;
+        this.credentials = {
+            access_token:    data.access_token,
+            refresh_token:   data.refresh_token
+        };
         this._expirationTimestamp       = Date.now() + data.expires_in * 1000;
         this._authFailed                = false;
 
@@ -103,7 +105,7 @@ DailymotionAPI.prototype.createToken = function(next) {
  * @param  {Function} next Callback for when the token is indeed refreshed. Can be called with 1 param if error
  */
 DailymotionAPI.prototype.refreshToken = function(next) {
-    if (!this.credentials.refreshToken)
+    if (!this.credentials.refresh_token)
         throw 'DM.API :: refresh_token not set!';
 
     request.post({
@@ -112,14 +114,16 @@ DailymotionAPI.prototype.refreshToken = function(next) {
             client_id:      this.config.client_id,
             client_secret:  this.config.client_secret,
             grant_type:     'refresh_token',
-            refresh_token:  this.credentials.refreshToken
+            refresh_token:  this.credentials.refresh_token
         }
     }, function(e, r, body) {
         try         { var data = JSON.parse(body); }
         catch (e)   { return next(e); }
 
-        this.credentials.accessToken    = data.access_token;
-        this.credentials.refreshToken   = data.refresh_token;
+        this.credentials = {
+            access_token:    data.access_token,
+            refresh_token:   data.refresh_token
+        };
         this._expirationTimestamp       = Date.now() + data.expires_in * 1000;
         this._authFailed                = false;
 
@@ -167,7 +171,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
         url: DM_API_ROOT + endpoint,
         method: verb.toUpperCase(), // always UPPERCASEPLS
         auth: { // DM auth
-            bearer: this.credentials.accessToken
+            bearer: this.credentials.access_token
         }
     };
 
@@ -234,7 +238,7 @@ DailymotionAPI.prototype.upload = function(options) {
                     url: progressURL,
                     method: 'GET',
                     auth: {
-                        bearer: this.credentials.accessToken
+                        bearer: this.credentials.access_token
                     },
                 }, function(e, r, body) {
                     try         { var res = JSON.parse(body); }
@@ -249,7 +253,7 @@ DailymotionAPI.prototype.upload = function(options) {
             url: uploadURL,
             method: 'POST',
             auth: {
-                bearer: this.credentials.accessToken
+                bearer: this.credentials.access_token
             },
             formData: {
                 file: fs.createReadStream(options.filepath)

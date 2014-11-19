@@ -9,24 +9,32 @@ var DM_API_ROOT = 'https://api.dailymotion.com';
 var GRANT_TYPES = ['client_credentials', 'authorization_code', 'password'];
 
 var DailymotionAPI = function(clientID, clientSecret, scope) {
-    this.config = {};
-    this.config.client_id = clientID;
-    this.config.client_secret = clientSecret;
-    this.config.scope = scope || null;
+    this.config = {
+        client_id:      clientID,
+        client_secret:  clientSecret,
+        scope:          scope || []
+    };
 
-    this.credentials = {};
-    this.grant_type = 'authorization_code';
+    this.credentials    = {};
+    this.grant_type     = 'authorization_code';
 
-    this._expirationTimestamp = null;
-    this._authFailed = true;
+    this._expirationTimestamp   = null;
+    this._authFailed            = true;
 };
 
 /**
  * Sets access scope
- * @param {array} scope Array of scope permission strings
+ * @param {array|function|string} scope - Permission scopes. Can be array, function or string (separated by spaces)
  */
 DailymotionAPI.prototype.setScope = function(scope) {
-    this.config.scope = scope;
+    if (typeof scope === 'function')
+        scope = scope();
+
+    if (typeof scope === 'string')
+        scope = scope.split(' ');
+
+    if (_.isArray(scope))
+        this.config.scope = scope;
 
     return this;
 };
@@ -70,9 +78,9 @@ DailymotionAPI.prototype.setCredentials = function(grant_type, credentials) {
  * @param  {Function} next Callback for when the token is indeed refreshed. Can be called with 1 param if error
  */
 DailymotionAPI.prototype.createToken = function(next) {
-    var payload = _.extend(this.config, this.credentials);
-    payload.scope = payload.scope.join(' ');
-    payload.grant_type = this.grant_type;
+    var payload         = _.extend(this.config, this.credentials);
+    payload.scope       = payload.scope.join(' ');
+    payload.grant_type  = this.grant_type;
 
     request.post({
         url: DM_API_ROOT + '/oauth/token',
@@ -80,10 +88,12 @@ DailymotionAPI.prototype.createToken = function(next) {
     }, function(e, r, body) {
         try         { var data = JSON.parse(body); }
         catch (e)   { return next(e); }
-        this.credentials.accessToken = data.access_token;
-        this.credentials.refreshToken = data.refresh_token;
-        this._expirationTimestamp = Date.now() + data.expires_in * 1000;
-        this._authFailed = false;
+
+        this.credentials.accessToken    = data.access_token;
+        this.credentials.refreshToken   = data.refresh_token;
+        this._expirationTimestamp       = Date.now() + data.expires_in * 1000;
+        this._authFailed                = false;
+
         next();
     }.bind(this));
 };
@@ -99,18 +109,20 @@ DailymotionAPI.prototype.refreshToken = function(next) {
     request.post({
         url: DM_API_ROOT + '/oauth/token',
         form: {
-            client_id: this.config.client_id,
-            client_secret: this.config.client_secret,
-            grant_type: 'refresh_token',
-            refresh_token: this.credentials.refreshToken
+            client_id:      this.config.client_id,
+            client_secret:  this.config.client_secret,
+            grant_type:     'refresh_token',
+            refresh_token:  this.credentials.refreshToken
         }
     }, function(e, r, body) {
         try         { var data = JSON.parse(body); }
         catch (e)   { return next(e); }
-        this.credentials.accessToken = data.access_token;
-        this.credentials.refreshToken = data.refresh_token;
-        this._expirationTimestamp = Date.now() + data.expires_in * 1000;
-        this._authFailed = false;
+
+        this.credentials.accessToken    = data.access_token;
+        this.credentials.refreshToken   = data.refresh_token;
+        this._expirationTimestamp       = Date.now() + data.expires_in * 1000;
+        this._authFailed                = false;
+
         next();
     }.bind(this));
 };
@@ -210,9 +222,10 @@ DailymotionAPI.prototype.upload = function(options) {
 
     // Request upload URL
     this.get('/file/upload', function(err, req, res) {
-        var uploadURL = res.upload_url;
-        var progressURL = res.progress_url;
-        var progresshwnd = null;
+        var uploadURL       = res.upload_url;
+        var progressURL     = res.progress_url;
+        var progresshwnd    = null;
+
         if (typeof options.progress === 'function')
         {
             // Progress Handle - check progress every 3 seconds

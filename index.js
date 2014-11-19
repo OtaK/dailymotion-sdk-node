@@ -67,8 +67,7 @@ DailymotionAPI.prototype.setCredentials = function(grant_type, credentials) {
 
 /**
  * Creates a token when you have 'password' grant type
- * @param  {Function} next [description]
- * @return {[type]}        [description]
+ * @param  {Function} next Callback for when the token is indeed refreshed. Can be called with 1 param if error
  */
 DailymotionAPI.prototype.createToken = function(next) {
     var payload = _.extend(this.config, this.credentials);
@@ -79,7 +78,8 @@ DailymotionAPI.prototype.createToken = function(next) {
         url: DM_API_ROOT + '/oauth/token',
         form: payload
     }, function(e, r, body) {
-        var data = JSON.parse(body);
+        try         { var data = JSON.parse(body); }
+        catch (e)   { return next(e); }
         this.credentials.accessToken = data.access_token;
         this.credentials.refreshToken = data.refresh_token;
         this._expirationTimestamp = Date.now() + data.expires_in * 1000;
@@ -90,7 +90,7 @@ DailymotionAPI.prototype.createToken = function(next) {
 
 /**
  * Refreshes an expired access_token with the help of a refresh_token
- * @param  {Function} next Callback for when the token is indeed refreshed
+ * @param  {Function} next Callback for when the token is indeed refreshed. Can be called with 1 param if error
  */
 DailymotionAPI.prototype.refreshToken = function(next) {
     if (!this.credentials.refreshToken)
@@ -105,7 +105,8 @@ DailymotionAPI.prototype.refreshToken = function(next) {
             refresh_token: this.credentials.refreshToken
         }
     }, function(e, r, body) {
-        var data = JSON.parse(body);
+        try         { var data = JSON.parse(body); }
+        catch (e)   { return next(e); }
         this.credentials.accessToken = data.access_token;
         this.credentials.refreshToken = data.refresh_token;
         this._expirationTimestamp = Date.now() + data.expires_in * 1000;
@@ -119,7 +120,8 @@ DailymotionAPI.prototype.refreshToken = function(next) {
  * @param  {string}   verb     HTTP Verb to be used
  * @param  {string}   endpoint Endpoint path
  * @param  {object}   data     Data to send to given endpoint
- * @param  {Function} callback Function called when request is done. It is called with the body parsed as JSON as first parameter.
+ * @param  {Function} callback Function called when request is done. Callback params are:
+ *                                 - {Error} err - It should be null most of the time
  */
 DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
 
@@ -143,7 +145,8 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
             throw 'DM.API :: Authentication failed twice, check your credentials';
 
         this._authFailed = true;
-        return this.refreshToken(function() {
+        return this.refreshToken(function(e) {
+            if (!!e) return callback(e, null, {});
             this.api(verb, endpoint, data, callback);
         }.bind(this));
     }
@@ -172,7 +175,11 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     // Perform actual api request
     return request(opts, function(e, r, body) {
         if (typeof callback === 'function')
-            callback(JSON.parse(body));
+        {
+            try         { var res = JSON.parse(body); }
+            catch (e)   { return callback(e, r, {}); }
+            callback(e, r, res);
+        }
     });
 };
 
@@ -202,7 +209,7 @@ DailymotionAPI.prototype.upload = function(options) {
         throw 'DM.API :: Filepath not found';
 
     // Request upload URL
-    this.get('/file/upload', function(res) {
+    this.get('/file/upload', function(err, req, res) {
         var uploadURL = res.upload_url;
         var progressURL = res.progress_url;
         var progresshwnd = null;
@@ -217,7 +224,9 @@ DailymotionAPI.prototype.upload = function(options) {
                         bearer: this.credentials.accessToken
                     },
                 }, function(e, r, body) {
-                    options.progress(JSON.parse(body));
+                    try         { var res = JSON.parse(body); }
+                    catch (e)   { return options.progress(e, r, {}); }
+                    options.progress(null, r, res);
                 });
             }, 3000);
         }
@@ -236,7 +245,9 @@ DailymotionAPI.prototype.upload = function(options) {
                 'Content-Type': 'video/mp4'
             }
         }, function(e, r, body) {
-            var uploadRes = JSON.parse(body);
+            try         { var uploadRes = JSON.parse(body); }
+            catch (e)   { return (typeof options.done === 'function' ? options.done(e, null) : undefined); }
+
             var videoURL = uploadRes.url;
 
             // Stop progress checked
@@ -249,9 +260,14 @@ DailymotionAPI.prototype.upload = function(options) {
             // Associate newly uploaded video to account
             this.post('/me/videos', _.extend(options.meta, {
                 url: videoURL
-            }), function(videoCreated) {
-                if (typeof options.done === 'function')
-                    options.done(videoCreated);
+            }), function(err2, req2, videoCreated) {
+                if (typeof options.done !== 'function')
+                    return;
+
+                if (!!err)
+                    return options.done(err2, null);
+
+                options.done(null, videoCreated);
             });
         });
     });

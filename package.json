@@ -1,6 +1,6 @@
 {
     "name":           "dailymotion-sdk",
-    "version":        "0.0.2",
+    "version":        "0.1.0",
     "description":    "Node.js SDK for Dailymotion API",
     "main":           "index.js",
     "scripts":        {

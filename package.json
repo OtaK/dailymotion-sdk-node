@@ -13,11 +13,12 @@
     "keywords":       [
         "dailymotion",
         "oauth",
-        "api"
+        "api",
+        "sdk"
     ],
     "dependencies":   {
         "lodash":  "2.4.x",
-        "request": "2.33.x"
+        "request": "2.48.x"
     },
     "author":         {
         "name":  "Mathieu Amiot",

@@ -47,8 +47,11 @@ DailymotionAPI.prototype.setScope = function(scope) {
  *                                     - {string} username
  *                                     - {string} password
  *                                 authorization_code:
- *                                     - {string} access_token
- *                                     - {string} refresh_token
+ *                                         - {string} access_token
+ *                                         - {string} refresh_token
+ *                                     OR
+ *                                         - {string} redirect_uri
+ *                                         - {string} code
  *                                 client_credentials:
  *                                     leave it empty
  */
@@ -63,9 +66,9 @@ DailymotionAPI.prototype.setCredentials = function(grant_type, credentials) {
     else
     {
         this.credentials = _.extend(this.credentials, credentials);
-        if (this.grant_type === 'authorization_code')
+        if (this.grant_type === 'authorization_code' && !!this.credentials.access_token)
         {
-            this._expirationTimestamp = credentials.expires_at;
+            this._expirationTimestamp = this.credentials.expires_at;
             delete this.credentials.expires_at;
         }
     }

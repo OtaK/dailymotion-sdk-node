@@ -260,9 +260,6 @@ DailymotionAPI.prototype.upload = function(options) {
             },
             formData: {
                 file: fs.createReadStream(options.filepath)
-            },
-            headers: {
-                'Content-Type': 'video/mp4'
             }
         }, function(e, r, body) {
             try         { var uploadRes = JSON.parse(body); }

@@ -224,7 +224,7 @@ DailymotionAPI.prototype.upload = function(options) {
     if (!options.filepath || !options.meta)
         throw 'DM.API :: Filepath or meta not given in upload method';
 
-    if (!fs.fileExistsSync(options.filepath))
+    if (!fs.existsSync(options.filepath))
         throw 'DM.API :: Filepath not found';
 
     // Request upload URL

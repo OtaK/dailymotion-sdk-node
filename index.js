@@ -285,9 +285,9 @@ DailymotionAPI.prototype.upload = function(options) {
                     return options.done(err2, null);
 
                 options.done(null, videoCreated);
-            });
-        });
-    });
+            }.bind(this));
+        }.bind(this));
+    }.bind(this));
 };
 
 module.exports.client = DailymotionAPI;

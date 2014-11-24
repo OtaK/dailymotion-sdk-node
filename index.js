@@ -204,12 +204,12 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
 
 
 // Convenience methods for api()
-DailymotionAPI.prototype.get     = function(endpoint, data, callback) { this.api('GET',    endpoint, data, callback); };
-DailymotionAPI.prototype.post    = function(endpoint, data, callback) { this.api('POST',   endpoint, data, callback); };
-DailymotionAPI.prototype.head    = function(endpoint, data, callback) { this.api('HEAD',   endpoint, data, callback); };
-DailymotionAPI.prototype.put     = function(endpoint, data, callback) { this.api('PUT',    endpoint, data, callback); };
-DailymotionAPI.prototype.patch   = function(endpoint, data, callback) { this.api('PATCH',  endpoint, data, callback); };
-DailymotionAPI.prototype.del     = function(endpoint, data, callback) { this.api('DELETE', endpoint, data, callback); };
+DailymotionAPI.prototype.get     = function(endpoint, data, callback) { this.api('GET',     endpoint, data, callback); };
+DailymotionAPI.prototype.post    = function(endpoint, data, callback) { this.api('POST',    endpoint, data, callback); };
+DailymotionAPI.prototype.put     = function(endpoint, data, callback) { this.api('PUT',     endpoint, data, callback); };
+DailymotionAPI.prototype.patch   = function(endpoint, data, callback) { this.api('PATCH',   endpoint, data, callback); };
+DailymotionAPI.prototype.del     = function(endpoint, data, callback) { this.api('DELETE',  endpoint, data, callback); };
+DailymotionAPI.prototype.head    = function(endpoint, callback)       { this.api('HEAD',    endpoint, callback); };
 DailymotionAPI.prototype.options = function(endpoint, callback)       { this.api('OPTIONS', endpoint, callback); };
 
 /**

@@ -262,6 +262,7 @@ DailymotionAPI.prototype.upload = function(options) {
 
                     try         { var res = JSON.parse(body); }
                     catch (e)   { return options.progress(e, r, {}); }
+                    res.progress = res.received / res.size * 100;
                     options.progress(null, r, res);
                 });
             }.bind(this), 3000);

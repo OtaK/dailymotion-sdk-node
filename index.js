@@ -140,7 +140,9 @@ DailymotionAPI.prototype.refreshToken = function(next) {
  * @param  {string}   endpoint Endpoint path
  * @param  {object}   data     Data to send to given endpoint
  * @param  {Function} callback Function called when request is done. Callback params are:
- *                                 - {Error} err - It should be null most of the time
+ *                                 - {Error} err  - It should be null most of the time
+ *                                 - {Request} r  - Request object for better control
+ *                                 - {Object} res - Parsed response body
  */
 DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
 
@@ -197,6 +199,9 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
         {
             try         { var res = JSON.parse(body); }
             catch (e)   { return callback(e, r, {}); }
+            if (!!res.error)
+                return callback(res.error, r, {});
+
             callback(e, r, res);
         }
     });
@@ -229,6 +234,9 @@ DailymotionAPI.prototype.upload = function(options) {
 
     // Request upload URL
     this.get('/file/upload', function(err, req, res) {
+        if (!!err)
+            return !!options.done && options.done(err, null);
+
         var uploadURL       = res.upload_url;
         var progressURL     = res.progress_url;
         var progresshwnd    = null;
@@ -244,6 +252,14 @@ DailymotionAPI.prototype.upload = function(options) {
                         bearer: this.credentials.access_token
                     },
                 }, function(e, r, body) {
+                    if (!!e)
+                    {
+                        !!options.progress && options.progress(e, r, {});
+                        clearInterval(progresshwnd);
+                        progresshwnd = null;
+                        return;
+                    }
+
                     try         { var res = JSON.parse(body); }
                     catch (e)   { return options.progress(e, r, {}); }
                     options.progress(null, r, res);
@@ -262,6 +278,18 @@ DailymotionAPI.prototype.upload = function(options) {
                 file: fs.createReadStream(options.filepath)
             }
         }, function(e, r, body) {
+            if (!!e)
+            {
+                !!options.done && options.done(e, null);
+                if (!!progresshwnd)
+                {
+                    clearInterval(progresshwnd);
+                    progresshwnd = null;
+                }
+
+                return;
+            }
+
             try         { var uploadRes = JSON.parse(body); }
             catch (e)   { return (typeof options.done === 'function' ? options.done(e, null) : undefined); }
 
@@ -282,7 +310,7 @@ DailymotionAPI.prototype.upload = function(options) {
                     return;
 
                 if (!!err)
-                    return options.done(err2, null);
+                    return !!options.done && options.done(err2, null);
 
                 options.done(null, videoCreated);
             }.bind(this));

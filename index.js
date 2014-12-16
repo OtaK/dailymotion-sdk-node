@@ -313,7 +313,7 @@ DailymotionAPI.prototype.upload = function(options) {
                 if (!!err)
                     return !!options.done && options.done(err2, null);
 
-                options.done(null, videoCreated);
+                options.done(err2, videoCreated);
             }.bind(this));
         }.bind(this));
     }.bind(this));

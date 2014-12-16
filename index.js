@@ -171,7 +171,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     }
 
     var opts = {
-        url: DM_API_ROOT + endpoint,
+        uri: DM_API_ROOT + endpoint,
         method: verb.toUpperCase(), // always UPPERCASEPLS
         auth: { // DM auth
             bearer: this.credentials.access_token
@@ -182,7 +182,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     switch (opts.method)
     {
         case 'GET': // append query string
-            opts.url += url.format({ query: data });
+            opts.uri += url.format({ query: data });
             break;
         case 'POST': // use form param
             opts.form = data;
@@ -238,8 +238,8 @@ DailymotionAPI.prototype.upload = function(options) {
             // Progress Handle - check progress every 3 seconds
             progresshwnd = setInterval(function() {
                 request({
-                    url: progressURL,
                     method: 'GET',
+                    uri: progressURL,
                     auth: {
                         bearer: this.credentials.access_token
                     },
@@ -253,8 +253,8 @@ DailymotionAPI.prototype.upload = function(options) {
 
         // Proceed to upload
         request({
-            url: uploadURL,
             method: 'POST',
+            uri: uploadURL,
             auth: {
                 bearer: this.credentials.access_token
             },

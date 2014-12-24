@@ -181,6 +181,11 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
         }
     };
 
+    _.transform(data, function(i) {
+        if (_.isArray(i))
+            i = i.join();
+    });
+
     // Automatic data passing
     switch (opts.method)
     {

@@ -184,7 +184,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     switch (opts.method)
     {
         case 'GET': // append query string
-            opts.uri += url.format({ query: data });
+            opts.qs = data;
             break;
         case 'POST': // use form param
             opts.form = data;

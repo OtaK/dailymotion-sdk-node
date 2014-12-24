@@ -181,9 +181,9 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
         }
     };
 
-    _.transform(data, function(i) {
-        if (_.isArray(i))
-            i = i.join();
+    // Try to fix DM's PHP QS shit
+    data = _.transform(data, function(acc, item, k) {
+        acc[k] = _.isArray(item) ? item.join() : item;
     });
 
     // Automatic data passing

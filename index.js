@@ -175,6 +175,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     var opts = {
         uri: DM_API_ROOT + endpoint,
         method: verb.toUpperCase(), // always UPPERCASEPLS
+        useQuerystring: true,
         auth: { // DM auth
             bearer: this.credentials.access_token
         }

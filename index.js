@@ -57,7 +57,7 @@ DailymotionAPI.prototype.setScope = function(scope) {
  */
 DailymotionAPI.prototype.setCredentials = function(grant_type, credentials) {
     if (GRANT_TYPES.indexOf(grant_type) === -1)
-        throw 'DM.API :: Given grant_type in setCredentials() does not match any known type';
+        throw new Error('DM.API :: Given grant_type in setCredentials() does not match any known type');
 
     this.grant_type = grant_type;
 
@@ -109,7 +109,7 @@ DailymotionAPI.prototype.createToken = function(next) {
  */
 DailymotionAPI.prototype.refreshToken = function(next) {
     if (!this.credentials.refresh_token)
-        throw 'DM.API :: refresh_token not set!';
+        throw new Error('DM.API :: refresh_token not set!');
 
     request.post({
         url: DM_API_ROOT + '/oauth/token',
@@ -163,7 +163,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     if (!!this._expirationTimestamp && this._expirationTimestamp <= Date.now())
     {
         if (this._authFailed)
-            throw 'DM.API :: Authentication failed twice, check your credentials';
+            throw new Error('DM.API :: Authentication failed twice, check your credentials');
 
         this._authFailed = true;
         return this.refreshToken(function(e) {
@@ -233,10 +233,10 @@ DailymotionAPI.prototype.options = function(endpoint, callback)       { this.api
  */
 DailymotionAPI.prototype.upload = function(options) {
     if (!options.filepath || !options.meta)
-        throw 'DM.API :: Filepath or meta not given in upload method';
+        throw new Error('DM.API :: Filepath or meta not given in upload method');
 
     if (!fs.existsSync(options.filepath))
-        throw 'DM.API :: Filepath not found';
+        throw new Error('DM.API :: Filepath not found');
 
     // Request upload URL
     this.get('/file/upload', function(err, req, res) {

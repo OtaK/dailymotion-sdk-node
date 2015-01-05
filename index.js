@@ -109,7 +109,7 @@ DailymotionAPI.prototype.createToken = function(next) {
  */
 DailymotionAPI.prototype.refreshToken = function(next) {
     if (!this.credentials.refresh_token)
-        throw new Error('DM.API :: refresh_token not set!');
+        return next(new Error('DM.API :: refresh_token not set!'));
 
     request.post({
         url: DM_API_ROOT + '/oauth/token',
@@ -163,7 +163,7 @@ DailymotionAPI.prototype.api = function(verb, endpoint, data, callback) {
     if (!!this._expirationTimestamp && this._expirationTimestamp <= Date.now())
     {
         if (this._authFailed)
-            throw new Error('DM.API :: Authentication failed twice, check your credentials');
+            return callback(new Error('DM.API :: Authentication failed twice, check your credentials'), null, {});
 
         this._authFailed = true;
         return this.refreshToken(function(e) {
@@ -233,10 +233,10 @@ DailymotionAPI.prototype.options = function(endpoint, callback)       { this.api
  */
 DailymotionAPI.prototype.upload = function(options) {
     if (!options.filepath || !options.meta)
-        throw new Error('DM.API :: Filepath or meta not given in upload method');
+        return !!options.done && options.done(new Error('DM.API :: Filepath or meta not given in upload method'), null);
 
     if (!fs.existsSync(options.filepath))
-        throw new Error('DM.API :: Filepath not found');
+        return !!options.done && options.done(new Error('DM.API :: Filepath not found'), null);
 
     // Request upload URL
     this.get('/file/upload', function(err, req, res) {

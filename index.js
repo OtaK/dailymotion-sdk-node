@@ -65,7 +65,7 @@ DailymotionAPI.prototype.setCredentials = function(grant_type, credentials) {
         this.credentials = {};
     else
     {
-        this.credentials = _.extend(this.credentials, credentials);
+        this.credentials = _.assign(this.credentials, credentials);
         if (this.grant_type === 'authorization_code' && !!this.credentials.access_token)
         {
             this._expirationTimestamp = this.credentials.expires_at;
@@ -81,7 +81,7 @@ DailymotionAPI.prototype.setCredentials = function(grant_type, credentials) {
  * @param  {Function} next Callback for when the token is indeed refreshed. Can be called with 1 param if error
  */
 DailymotionAPI.prototype.createToken = function(next) {
-    var payload         = _.extend(this.config, this.credentials);
+    var payload         = _.assign(this.config, this.credentials);
     payload.scope       = payload.scope.join(' ');
     payload.grant_type  = this.grant_type;
 
@@ -310,7 +310,7 @@ DailymotionAPI.prototype.upload = function(options) {
             }
 
             // Associate newly uploaded video to account
-            this.post('/me/videos', _.extend(options.meta, {
+            this.post('/me/videos', _.assign(options.meta, {
                 url: videoURL
             }), function(err2, req2, videoCreated) {
                 if (typeof options.done !== 'function')

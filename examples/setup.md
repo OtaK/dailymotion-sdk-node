@@ -4,7 +4,7 @@
 
 ```javascript
 
-var DMClient = require('dailymotion-sdk').Client;
+var DMClient = require('dailymotion-sdk').client;
 
 var clientId = ''; // Fill yours
 var clientSecret = ''; // Fill yours

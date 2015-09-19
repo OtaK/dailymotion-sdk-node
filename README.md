@@ -3,6 +3,9 @@ dailymotion-sdk-node
 
 Node.js SDK for Dailymotion API
 
+# Examples
+Refer to the `examples` folder to get a setup example
+
 # API
 
 
